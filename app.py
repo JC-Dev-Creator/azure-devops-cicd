@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Hello from my automated CI/CD pipeline!"
+    return "CI/CD deployment successful - automatically deployed from GitHub!"
 
 
 @app.route("/health")

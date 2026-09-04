@@ -6,7 +6,7 @@ def test_home_page():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"Hello from my automated CI/CD pipeline!" in response.data
+    assert b"CI/CD deployment successful - automatically deployed from GitHub!" in response.data
 
 
 def test_health_endpoint():

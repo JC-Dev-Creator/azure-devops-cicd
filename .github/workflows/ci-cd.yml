@@ -56,5 +56,4 @@ jobs:
           az containerapp update \
             --name jc-cicd-portfolio-app \
             --resource-group rg-cicd-portfolio-dev \
-            --image jcdevcicdacr.azurecr.io/azure-devops-cicd:${{ github.sha }} \
-            --target-port 5000
+            --image jcdevcicdacr.azurecr.io/azure-devops-cicd:${{ github.sha }}

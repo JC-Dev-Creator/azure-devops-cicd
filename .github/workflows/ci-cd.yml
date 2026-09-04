@@ -8,8 +8,12 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
-  test-and-build:
+  test-build-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,5 +31,30 @@ jobs:
       - name: Run tests
         run: PYTHONPATH=. pytest -v
 
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name jcdevcicdacr
+
       - name: Build Docker image
-        run: docker build -t azure-devops-cicd .
+        run: |
+          docker build -t jcdevcicdacr.azurecr.io/azure-devops-cicd:${{ github.sha }} .
+          docker tag jcdevcicdacr.azurecr.io/azure-devops-cicd:${{ github.sha }} jcdevcicdacr.azurecr.io/azure-devops-cicd:latest
+
+      - name: Push Docker image
+        run: |
+          docker push jcdevcicdacr.azurecr.io/azure-devops-cicd:${{ github.sha }}
+          docker push jcdevcicdacr.azurecr.io/azure-devops-cicd:latest
+
+      - name: Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name jc-cicd-portfolio-app \
+            --resource-group rg-cicd-portfolio-dev \
+            --image jcdevcicdacr.azurecr.io/azure-devops-cicd:${{ github.sha }} \
+            --target-port 5000
